@@ -1,7 +1,7 @@
 int count=0;
 int totalPopulation=500;
 PVector target = new PVector(1000, 250);
-int forceCount=0, index=0, maxfitness=0;
+int forceCount=0, index=0, maxfitness=0, totalScore=0;;
 population p =new population();
 
 void setup(){
@@ -24,5 +24,10 @@ void draw(){
     text("max Fitness=", 1110, 100);
     text(maxfitness, 1110+textWidth("max Fitness="), 100);
   }
-  if(count>999)count=0;
+  if(count>=1000){
+    p.makeNewGen();
+    p.mutate();
+    totalScore=0;
+    count=0;
+  }
 }
