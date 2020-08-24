@@ -19,6 +19,9 @@ class population{
     background(255);
     for(int i=0; i<totalPopulation; i++){
       if((m0[i].pos.x<0)||(m0[i].pos.x>1100)||(m0[i].pos.y<0)||(m0[i].pos.y>height))m0[i].alive=false;
+      if(ob0.active){
+        if((m0[i].pos.x<(ob0.pos.x+ob0.param.x))&&(m0[i].pos.x>ob0.pos.x)&&(m0[i].pos.y<ob0.pos.y+ob0.param.y)&&(m0[i].pos.y>(ob0.pos.y)))m0[i].alive=false;;
+      }
       if(PVector.dist(m0[i].pos, target)<20){
             m0[i].goal=true;
             m0[i].pos.set(target.x, target.y);
@@ -28,7 +31,7 @@ class population{
         m0[i].pos.add(m0[i].vel);
       }
       fill(#2D6FFA);
-      if(index==i){fill(#FAFF03);line(m0[i].pos.x, m0[i].pos.y, target.x, target.y);}
+      if(index==i){noFill();stroke(#FF0505);line(m0[i].pos.x, m0[i].pos.y, target.x, target.y);ellipse(m0[i].pos.x, m0[i].pos.y, 80, 80);stroke(0);fill(#FAFF03);}
       ellipseMode(CENTER);
       ellipse(m0[i].pos.x, m0[i].pos.y, 10, 10);
     }
@@ -40,7 +43,7 @@ class population{
   //--------------------------------------------------------------------------------------------------------------------------------------------------------------//
   //this function evaluates the fitness and probability of
   //selection of each sample based on the fitness of the sample
-  void evaluate(){
+  void evaluate( ){
     for(count=0; count<1000; count++){
       for(int i=0; i<totalPopulation; i++){
         if((m0[i].alive)&&(!m0[i].goal)){
@@ -48,6 +51,9 @@ class population{
           m0[i].pos.add(m0[i].vel);
           m0[i].steps--;
           if((m0[i].pos.x<0)||(m0[i].pos.x>1100)||(m0[i].pos.y<0)||(m0[i].pos.y>height))m0[i].alive=false;
+          if(ob0.active){
+            if((m0[i].pos.x<(ob0.pos.x+ob0.param.x))&&(m0[i].pos.x>ob0.pos.x)&&(m0[i].pos.y<ob0.pos.y+ob0.param.y)&&(m0[i].pos.y>(ob0.pos.y)))m0[i].alive=false;;
+          }
           if(PVector.dist(m0[i].pos, target)<20){
             m0[i].goal=true;
             m0[i].pos.set(target.x, target.y);
@@ -65,17 +71,18 @@ class population{
     for(int i=0; i<totalPopulation; i++){
       int fit=0;
       float d= PVector.dist(target, m0[i].pos);
-      fit= int(10000000/(d+1));
+      //print("dist=",d," ----- ");
+      fit= int(5000000/(d+1));
       
       if(!m0[i].alive){
-        fit-=5000-m0[i].steps/5-d/5; //reduce fitness because it's not alive
+        fit=fit-500-floor(m0[i].steps/5)+floor(10000/d)+floor(1000/(m0[i].steps+1));     //reduce fitness because it's not alive
       }else  if(m0[i].goal){
-        fit+=10000;                   // increase fitness because it reached goal
-        fit+=m0[i].steps/10;         // the less step it takes to reach the goal the more fit is and more reward 
+        fit+=50000+sq(m0[i].steps/10);   // increase fitness because it reached goal the less step it takes to reach the goal the more fit is and more reward
       }else{ 
         fit+=500+(500/d)+sqrt(m0[i].steps); // increasing fitness just because it's not dead
       }
-      fit /= 100;
+      if(fit<0)fit=1;
+      else fit /= 100;
       m0[i].fitness=fit;
       if(maxfitness<m0[i].fitness){
         maxfitness=m0[i].fitness;
@@ -121,7 +128,8 @@ class population{
   }
   
   creature selection(){
-    float prob = random(totalScore);
+    int prob = int(random(totalScore));
+    if(prob>(totalScore-1))prob-=1;
     int c=0;
     do{
       prob -=m0[c].fitness;
